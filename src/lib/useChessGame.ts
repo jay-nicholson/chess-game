@@ -1,28 +1,36 @@
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { Chess } from "chess.js";
-import { 
-  Move, 
-  CapturedPieces, 
-  PendingMove, 
-  SquareStyles, 
+import {
+  Move,
+  CapturedPieces,
+  PendingMove,
+  SquareStyles,
   GameStatus,
-  calculateCapturedPieces, 
-  isPromotion, 
+  calculateCapturedPieces,
+  isPromotion,
   generateMoveErrorMessage,
-  BOARD_STYLES
-} from './chess';
+  BOARD_STYLES,
+} from "./chess";
 
 export const useChessGame = () => {
   // Game state
   const [fen, setFen] = useState<string>(new Chess().fen());
   const [lastError, setLastError] = useState<string>("");
   const [moveFrom, setMoveFrom] = useState<string>("");
-  const [showPromotionDialog, setShowPromotionDialog] = useState<boolean>(false);
+  const [showPromotionDialog, setShowPromotionDialog] =
+    useState<boolean>(false);
   const [pendingMove, setPendingMove] = useState<PendingMove | null>(null);
-  const [capturedPieces, setCapturedPieces] = useState<CapturedPieces>({ 
-    white: [], 
-    black: [] 
+  const [capturedPieces, setCapturedPieces] = useState<CapturedPieces>({
+    white: [],
+    black: [],
   });
+
+  // Timer state
+  const [timerMinutes, setTimerMinutes] = useState<number>(20); // Default 20 minutes
+  const [whiteTime, setWhiteTime] = useState<number>(20 * 60); // in seconds
+  const [blackTime, setBlackTime] = useState<number>(20 * 60); // in seconds
+  const [isTimerActive, setIsTimerActive] = useState<boolean>(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Create game instance for status checks
   const game = useMemo(() => new Chess(fen), [fen]);
@@ -32,7 +40,7 @@ export const useChessGame = () => {
     const turnColor = game.turn() === "w" ? "White" : "Black";
     const inCheck = game.inCheck();
     const isGameOver = game.isGameOver();
-    
+
     let status: string;
     if (isGameOver) {
       if (game.isCheckmate()) {
@@ -55,6 +63,56 @@ export const useChessGame = () => {
   useEffect(() => {
     setCapturedPieces(calculateCapturedPieces(fen));
   }, [fen]);
+
+  // Timer countdown effect
+  useEffect(() => {
+    if (!isTimerActive || gameStatus.isGameOver) {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      return;
+    }
+
+    timerRef.current = setInterval(() => {
+      const currentTurn = game.turn();
+
+      if (currentTurn === "w") {
+        setWhiteTime((prev) => {
+          if (prev <= 1) {
+            setIsTimerActive(false);
+            // Handle time out - could set game over status
+            return 0;
+          }
+          return prev - 1;
+        });
+      } else {
+        setBlackTime((prev) => {
+          if (prev <= 1) {
+            setIsTimerActive(false);
+            // Handle time out - could set game over status
+            return 0;
+          }
+          return prev - 1;
+        });
+      }
+    }, 1000);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [isTimerActive, gameStatus.isGameOver, game]);
+
+  // Start timer on first move
+  useEffect(() => {
+    const initialFen = new Chess().fen();
+    if (fen !== initialFen && !isTimerActive && !gameStatus.isGameOver) {
+      setIsTimerActive(true);
+    }
+  }, [fen, isTimerActive, gameStatus.isGameOver]);
 
   // Make a move
   const makeMove = useCallback(
@@ -113,7 +171,7 @@ export const useChessGame = () => {
       }
 
       if (piece.color !== gameInstance.turn()) {
-        setLastError(`It's ${gameInstance.turn() === "w" ? "White" : "Black"}'s turn`);
+        // Silently prevent the move without showing error
         return false;
       }
 
@@ -135,11 +193,8 @@ export const useChessGame = () => {
         // Only allow selecting pieces of the current player's turn
         if (clickedPiece && clickedPiece.color === gameInstance.turn()) {
           setMoveFrom(square);
-        } else if (clickedPiece && clickedPiece.color !== gameInstance.turn()) {
-          setLastError(
-            `It's ${gameInstance.turn() === "w" ? "White" : "Black"}'s turn`
-          );
         }
+        // Silently ignore clicks on opponent's pieces
         return;
       }
 
@@ -192,7 +247,10 @@ export const useChessGame = () => {
   const getPossibleMoves = useCallback(() => {
     if (!moveFrom) return {};
     const gameInstance = new Chess(fen);
-    const moves = gameInstance.moves({ square: moveFrom as any, verbose: true });
+    const moves = gameInstance.moves({
+      square: moveFrom as any,
+      verbose: true,
+    });
     const possibleMoves: SquareStyles = {};
     moves.forEach((move: any) => {
       possibleMoves[move.to] = BOARD_STYLES.POSSIBLE_MOVE;
@@ -215,6 +273,19 @@ export const useChessGame = () => {
     return styles;
   }, [getPossibleMoves, moveFrom]);
 
+  // Timer change handler
+  const changeTimer = useCallback((minutes: number) => {
+    setTimerMinutes(minutes);
+    const seconds = minutes * 60;
+    setWhiteTime(seconds);
+    setBlackTime(seconds);
+    setIsTimerActive(false);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
+
   // Reset game
   const resetGame = useCallback(() => {
     const fresh = new Chess();
@@ -224,7 +295,17 @@ export const useChessGame = () => {
     setShowPromotionDialog(false);
     setPendingMove(null);
     setCapturedPieces({ white: [], black: [] });
-  }, []);
+
+    // Reset timers
+    const seconds = timerMinutes * 60;
+    setWhiteTime(seconds);
+    setBlackTime(seconds);
+    setIsTimerActive(false);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  }, [timerMinutes]);
 
   return {
     // Game state
@@ -233,16 +314,23 @@ export const useChessGame = () => {
     lastError,
     capturedPieces,
     customSquareStyles,
-    
+
+    // Timer state
+    whiteTime,
+    blackTime,
+    timerMinutes,
+    isTimerActive,
+
     // Promotion dialog state
     showPromotionDialog,
     pendingMove,
-    
+
     // Event handlers
     onDrop,
     onSquareClick,
     handlePromotion,
     cancelPromotion,
     resetGame,
+    changeTimer,
   };
 };

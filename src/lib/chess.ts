@@ -79,10 +79,10 @@ export const PIECE_SYMBOLS: PieceSymbols = {
 
 // Board styling constants
 export const BOARD_STYLES = {
-  DARK_SQUARE: { backgroundColor: "#769656" },
-  LIGHT_SQUARE: { backgroundColor: "#eeeed2" },
-  SELECTED_SQUARE: { backgroundColor: "rgba(255, 255, 0, 0.8)" },
-  POSSIBLE_MOVE: { backgroundColor: "rgba(255, 255, 0, 0.4)" },
+  DARK_SQUARE: { backgroundColor: "var(--board-dark-square)" },
+  LIGHT_SQUARE: { backgroundColor: "var(--board-light-square)" },
+  SELECTED_SQUARE: { backgroundColor: "var(--board-selected-square)" },
+  POSSIBLE_MOVE: { backgroundColor: "var(--board-possible-move)" },
   ANIMATION_DURATION: 200,
 };
 
