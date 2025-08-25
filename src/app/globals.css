@@ -1,8 +1,23 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Base colors */
+  --background: #0f172a;
+  --foreground: #e2e8f0;
+  --muted: #94a3b8;
+  --border: #334155;
+  --error: #f87171;
+
+  /* Component colors */
+  --card-bg: #1e293b;
+  --button-bg: #1e293b;
+  --button-hover: #475569;
+
+  /* Chess specific */
+  --captured-white-bg: rgba(255, 255, 255, 0.05);
+  --captured-black-bg: rgba(0, 0, 0, 0.2);
+  --error-bg: rgba(248, 113, 113, 0.1);
+  --error-border: rgba(248, 113, 113, 0.3);
 }
 
 @theme inline {
@@ -12,15 +27,84 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Layout utilities */
+.main-layout {
+  min-height: 100dvh;
+  padding: 16px;
+  display: grid;
+  place-items: center;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.game-container {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
+
+.board-wrapper {
+  width: 360px;
+}
+
+/* Component styles */
+.captured-pieces {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  max-width: 360px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.captured-pieces.white {
+  background: var(--captured-white-bg);
+}
+
+.captured-pieces.black {
+  background: var(--captured-black-bg);
+}
+
+.captured-label {
+  font-size: 12px;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.captured-piece {
+  font-size: 16px;
+}
+
+.error-message {
+  color: var(--error);
+  background: var(--error-bg);
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--error-border);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.game-button {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--button-bg);
+  color: var(--foreground);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.game-button:hover {
+  background: var(--button-hover);
 }
