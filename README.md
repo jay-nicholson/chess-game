@@ -13,6 +13,10 @@ A modern, interactive chess application built with React, Next.js, and TypeScrip
 - 🔄 **Game Status**: Real-time check, checkmate, and draw detection
 - 📱 **Responsive Design**: Clean, modern UI that works on all devices
 
+## Screenshots
+
+[Add screenshots of your chess game here]
+
 ## Getting Started
 
 ### Prerequisites
@@ -25,14 +29,13 @@ A modern, interactive chess application built with React, Next.js, and TypeScrip
 1. Clone the repository:
 
 ```bash
-git clone [your-repo-url]
-cd Chess
+git clone https://github.com/jay-nicholson/chess-game.git
+cd chess-game
 ```
 
 2. Install dependencies:
 
 ```bash
-cd chess-app
 npm install
 # or
 yarn install
@@ -76,7 +79,7 @@ This project is built on top of excellent open-source libraries:
 ### Chess Logic
 
 - **[chess.js](https://github.com/jhlywa/chess.js)** by Jeff Hlywa
-  - License: MIT
+  - License: BSD-2-Clause
   - Provides chess game logic, move validation, and game state management
 
 ### Chess Board UI
@@ -84,6 +87,8 @@ This project is built on top of excellent open-source libraries:
 - **[react-chessboard](https://github.com/Clariity/react-chessboard)** by Ryan Gregory
   - License: MIT
   - Provides the beautiful, interactive chess board component
+
+**Full license texts are available in [LICENSES.md](LICENSES.md)**
 
 ## License
 
