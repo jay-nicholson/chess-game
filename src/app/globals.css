@@ -437,3 +437,52 @@ body {
   border-color: var(--error);
   color: var(--error);
 }
+
+@media (max-width: 480px) {
+  .timer-banner {
+    padding: 10px 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-height: 0;
+  }
+
+  .timer-section {
+    padding: 0 4px;
+    flex: 1 1 50%;
+  }
+
+  .timer-header {
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+
+  .timer-label {
+    font-size: 10px;
+  }
+
+  .timer-value {
+    font-size: 18px;
+    padding: 4px 8px;
+    min-width: 64px;
+  }
+
+  .material-points {
+    font-size: 12px;
+    padding: 2px 6px;
+  }
+
+  .turn-indicator {
+    order: 3;
+    flex-basis: 100%;
+    padding: 4px 0 0;
+  }
+
+  .turn-text {
+    font-size: 10px;
+  }
+
+  .turn-dot {
+    width: 10px;
+    height: 10px;
+  }
+}
