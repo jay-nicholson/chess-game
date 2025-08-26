@@ -1,4 +1,4 @@
-import { Chess } from "chess.js";
+import { Chess, Square } from "chess.js";
 
 // ===== TYPES =====
 export type Move = {
@@ -107,8 +107,8 @@ export const getAllPieces = (game: Chess): Piece[] => {
       file <= "h";
       file = String.fromCharCode(file.charCodeAt(0) + 1)
     ) {
-      const square = file + rank;
-      const piece = game.get(square as any);
+      const square = (file + rank) as Square;
+      const piece = game.get(square);
       if (piece) {
         pieces.push(piece);
       }
@@ -165,7 +165,7 @@ export const calculateCapturedPieces = (currentFen: string): CapturedPieces => {
  */
 export const isPromotion = (move: Move, fen: string): boolean => {
   const game = new Chess(fen);
-  const piece = game.get(move.from as any);
+  const piece = game.get(move.from as Square);
   if (!piece || piece.type !== "p") return false;
 
   const fromRank = parseInt(move.from[1]);
@@ -213,8 +213,8 @@ export const getPieceName = (pieceType: string): string => {
  * Generate detailed error message for invalid moves
  */
 export const generateMoveErrorMessage = (move: Move, game: Chess): string => {
-  const piece = game.get(move.from as any);
-  const targetPiece = game.get(move.to as any);
+  const piece = game.get(move.from as Square);
+  const targetPiece = game.get(move.to as Square);
 
   if (!piece) {
     return `No piece on ${move.from.toUpperCase()}`;
@@ -230,12 +230,12 @@ export const generateMoveErrorMessage = (move: Move, game: Chess): string => {
 
   // Check if it's a valid move pattern for this piece type
   const moves = game.moves({
-    square: move.from as any,
+    square: move.from as Square,
     verbose: true,
   });
-  const validDestinations = moves.map((m: any) => m.to);
+  const validDestinations = moves.map((m) => m.to);
 
-  if (!validDestinations.includes(move.to)) {
+  if (!validDestinations.includes(move.to as Square)) {
     const pieceName = getPieceName(piece.type);
     return `${
       pieceName.charAt(0).toUpperCase() + pieceName.slice(1)

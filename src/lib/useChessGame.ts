@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
-import { Chess } from "chess.js";
+import { Chess, Square } from "chess.js";
 import {
   Move,
   CapturedPieces,
@@ -140,7 +140,7 @@ export const useChessGame = () => {
           setLastError(generateMoveErrorMessage(move, gameInstance));
           return false;
         }
-      } catch (error) {
+      } catch {
         setLastError(
           `Invalid move format: ${move.from.toUpperCase()} to ${move.to.toUpperCase()}`
         );
@@ -163,15 +163,18 @@ export const useChessGame = () => {
 
       // Validate turn before attempting the move
       const gameInstance = new Chess(fen);
-      const piece = gameInstance.get(sourceSquare as any);
+      const piece = gameInstance.get(sourceSquare as Square);
 
       if (!piece) {
         setLastError(`No piece on ${sourceSquare.toUpperCase()}`);
         return false;
       }
 
+      // Check if it's the piece owner's turn
       if (piece.color !== gameInstance.turn()) {
-        // Silently prevent the move without showing error
+        setLastError(
+          `It's ${gameInstance.turn() === "w" ? "White" : "Black"}'s turn`
+        );
         return false;
       }
 
@@ -182,19 +185,76 @@ export const useChessGame = () => {
     [makeMove, fen]
   );
 
+  // Handle piece drag begin - show valid moves
+  const onPieceDragBegin = useCallback(
+    ({
+      square,
+    }: {
+      isSparePiece: boolean;
+      piece: unknown;
+      square: string | null;
+    }) => {
+      if (!square) return false;
+
+      const gameInstance = new Chess(fen);
+      const pieceOnSquare = gameInstance.get(square as Square);
+
+      if (!pieceOnSquare) return false;
+
+      // Check if it's the piece owner's turn
+      if (pieceOnSquare.color !== gameInstance.turn()) {
+        // Don't allow highlighting or interaction with opponent's pieces
+        return false;
+      }
+
+      // Set the source square to show valid moves
+      setMoveFrom(square);
+      return true;
+    },
+    [fen]
+  );
+
+  // Optimized square styles - calculate directly instead of separate function
+  const customSquareStyles = useMemo((): SquareStyles => {
+    const styles: SquareStyles = {};
+
+    // Only calculate if there's a selected piece
+    if (moveFrom) {
+      const gameInstance = new Chess(fen);
+      const moves = gameInstance.moves({
+        square: moveFrom as Square,
+        verbose: true,
+      });
+
+      // Add possible moves
+      moves.forEach((move) => {
+        styles[move.to] = BOARD_STYLES.POSSIBLE_MOVE;
+      });
+
+      // Add selected square
+      styles[moveFrom] = BOARD_STYLES.SELECTED_SQUARE;
+    }
+
+    return styles;
+  }, [fen, moveFrom]);
+
   // Handle square click
   const onSquareClick = useCallback(
     ({ square }: { square: string }) => {
       const gameInstance = new Chess(fen);
-      const clickedPiece = gameInstance.get(square as any);
+      const clickedPiece = gameInstance.get(square as Square);
 
       // If no piece is selected
       if (!moveFrom) {
         // Only allow selecting pieces of the current player's turn
         if (clickedPiece && clickedPiece.color === gameInstance.turn()) {
           setMoveFrom(square);
+        } else if (clickedPiece) {
+          // Show error when trying to select opponent's piece
+          setLastError(
+            `It's ${gameInstance.turn() === "w" ? "White" : "Black"}'s turn`
+          );
         }
-        // Silently ignore clicks on opponent's pieces
         return;
       }
 
@@ -211,7 +271,7 @@ export const useChessGame = () => {
       }
 
       // If clicking on opponent's piece or empty square, try to make the move
-      const moveResult = makeMove({ from: moveFrom, to: square });
+      makeMove({ from: moveFrom, to: square });
       setMoveFrom("");
     },
     [fen, moveFrom, makeMove]
@@ -242,36 +302,6 @@ export const useChessGame = () => {
     setShowPromotionDialog(false);
     setPendingMove(null);
   }, []);
-
-  // Get possible moves for highlighting
-  const getPossibleMoves = useCallback(() => {
-    if (!moveFrom) return {};
-    const gameInstance = new Chess(fen);
-    const moves = gameInstance.moves({
-      square: moveFrom as any,
-      verbose: true,
-    });
-    const possibleMoves: SquareStyles = {};
-    moves.forEach((move: any) => {
-      possibleMoves[move.to] = BOARD_STYLES.POSSIBLE_MOVE;
-    });
-    return possibleMoves;
-  }, [fen, moveFrom]);
-
-  // Combine all custom square styles
-  const customSquareStyles = useMemo((): SquareStyles => {
-    const styles: SquareStyles = {};
-
-    // Add possible moves
-    Object.assign(styles, getPossibleMoves());
-
-    // Add selected square
-    if (moveFrom) {
-      styles[moveFrom] = BOARD_STYLES.SELECTED_SQUARE;
-    }
-
-    return styles;
-  }, [getPossibleMoves, moveFrom]);
 
   // Timer change handler
   const changeTimer = useCallback((minutes: number) => {
@@ -332,5 +362,6 @@ export const useChessGame = () => {
     cancelPromotion,
     resetGame,
     changeTimer,
+    onPieceDragBegin,
   };
 };

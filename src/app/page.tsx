@@ -54,6 +54,7 @@ export default function Home() {
     cancelPromotion,
     resetGame,
     changeTimer,
+    onPieceDragBegin,
   } = useChessGame();
 
   const currentPlayer = gameStatus.turnColor.toLowerCase() as "white" | "black";
@@ -107,6 +108,7 @@ export default function Home() {
                 position: fen,
                 onPieceDrop: onDrop,
                 onSquareClick: onSquareClick,
+                onPieceDrag: onPieceDragBegin,
                 animationDurationInMs: BOARD_STYLES.ANIMATION_DURATION,
                 darkSquareStyle: BOARD_STYLES.DARK_SQUARE,
                 lightSquareStyle: BOARD_STYLES.LIGHT_SQUARE,
