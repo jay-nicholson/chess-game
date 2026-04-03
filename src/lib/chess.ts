@@ -42,11 +42,47 @@ export type PieceSymbols = {
   [key: string]: string;
 };
 
+export type GameOutcome = "checkmate" | "draw" | "stalemate" | null;
+
 export type GameStatus = {
   status: string;
   turnColor: string;
   inCheck: boolean;
   isGameOver: boolean;
+  outcome: GameOutcome;
+  /** Side that won; only set when outcome is checkmate */
+  winner: "white" | "black" | null;
+};
+
+/** Shown when the player picks up a piece and puts it back on the same square */
+export const IDLE_SNARKS: readonly string[] = [
+  "Changed your mind? The board saw that.",
+  "Indecision is a move too — just not a legal one.",
+  "The pieces appreciate the stretch. Still your turn.",
+  "Bold strategy: hover menacingly, then retreat.",
+  "That square was lonely for a reason.",
+  "You almost had a plan. Emphasis on almost.",
+  "The king is still waiting. No rush. (There is rush.)",
+  "Plot twist: nobody moved.",
+  "Schrodinger's move: simultaneously brave and cancelled.",
+  "We'll call that a rehearsal. Break a leg next time.",
+];
+
+/**
+ * Random index into {@link IDLE_SNARKS}, never the same as `previous` when at least two lines exist.
+ * One shared value per game so both players see the same quip.
+ */
+export const pickNextIdleSnarkIndex = (previous: number | null): number => {
+  const n = IDLE_SNARKS.length;
+  if (n <= 1) return 0;
+  if (previous === null) {
+    return Math.floor(Math.random() * n);
+  }
+  let next: number;
+  do {
+    next = Math.floor(Math.random() * n);
+  } while (next === previous);
+  return next;
 };
 
 // ===== CONSTANTS =====

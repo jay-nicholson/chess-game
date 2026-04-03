@@ -10,12 +10,16 @@ import {
   isPromotion,
   generateMoveErrorMessage,
   BOARD_STYLES,
+  IDLE_SNARKS,
+  pickNextIdleSnarkIndex,
 } from "./chess";
 
 export const useChessGame = () => {
   // Game state
   const [fen, setFen] = useState<string>(new Chess().fen());
   const [lastError, setLastError] = useState<string>("");
+  /** Index into IDLE_SNARKS; null means hide idle snark */
+  const [idleSnarkIndex, setIdleSnarkIndex] = useState<number | null>(null);
   const [moveFrom, setMoveFrom] = useState<string>("");
   const [showPromotionDialog, setShowPromotionDialog] =
     useState<boolean>(false);
@@ -42,10 +46,20 @@ export const useChessGame = () => {
     const isGameOver = game.isGameOver();
 
     let status: string;
+    let outcome: GameStatus["outcome"] = null;
+    let winner: GameStatus["winner"] = null;
+
     if (isGameOver) {
       if (game.isCheckmate()) {
-        status = `Checkmate! ${turnColor === "White" ? "Black" : "White"} wins`;
+        outcome = "checkmate";
+        winner = game.turn() === "w" ? "black" : "white";
+        const winnerLabel = winner === "white" ? "White" : "Black";
+        status = `Checkmate — ${winnerLabel} wins`;
+      } else if (game.isStalemate()) {
+        outcome = "stalemate";
+        status = "Stalemate — draw";
       } else if (game.isDraw()) {
+        outcome = "draw";
         status = "Draw";
       } else {
         status = "Game over";
@@ -56,7 +70,7 @@ export const useChessGame = () => {
       status = `${turnColor} to move`;
     }
 
-    return { status, turnColor, inCheck, isGameOver };
+    return { status, turnColor, inCheck, isGameOver, outcome, winner };
   }, [game]);
 
   // Update captured pieces when FEN changes
@@ -118,6 +132,7 @@ export const useChessGame = () => {
   const makeMove = useCallback(
     (move: Move): boolean => {
       setLastError("");
+      setIdleSnarkIndex(null);
       const gameInstance = new Chess(fen);
 
       try {
@@ -159,7 +174,18 @@ export const useChessGame = () => {
       sourceSquare: string;
       targetSquare: string | null;
     }): boolean => {
-      if (!targetSquare) return false;
+      if (!targetSquare) {
+        setMoveFrom("");
+        return false;
+      }
+
+      // Putting the piece back — not an invalid move; random snark (not a repeat of last)
+      if (sourceSquare === targetSquare) {
+        setLastError("");
+        setIdleSnarkIndex((prev) => pickNextIdleSnarkIndex(prev));
+        setMoveFrom("");
+        return true;
+      }
 
       // Validate turn before attempting the move
       const gameInstance = new Chess(fen);
@@ -167,6 +193,7 @@ export const useChessGame = () => {
 
       if (!piece) {
         setLastError(`No piece on ${sourceSquare.toUpperCase()}`);
+        setIdleSnarkIndex(null);
         return false;
       }
 
@@ -175,6 +202,7 @@ export const useChessGame = () => {
         setLastError(
           `It's ${gameInstance.turn() === "w" ? "White" : "Black"}'s turn`
         );
+        setIdleSnarkIndex(null);
         return false;
       }
 
@@ -251,6 +279,7 @@ export const useChessGame = () => {
           setMoveFrom(square);
         } else if (clickedPiece) {
           // Show error when trying to select opponent's piece
+          setIdleSnarkIndex(null);
           setLastError(
             `It's ${gameInstance.turn() === "w" ? "White" : "Black"}'s turn`
           );
@@ -321,6 +350,7 @@ export const useChessGame = () => {
     const fresh = new Chess();
     setFen(fresh.fen());
     setLastError("");
+    setIdleSnarkIndex(null);
     setMoveFrom("");
     setShowPromotionDialog(false);
     setPendingMove(null);
@@ -342,6 +372,9 @@ export const useChessGame = () => {
     fen,
     gameStatus,
     lastError,
+    idleSnarkIndex,
+    idleSnark:
+      idleSnarkIndex === null ? null : IDLE_SNARKS[idleSnarkIndex],
     capturedPieces,
     customSquareStyles,
 

@@ -42,6 +42,8 @@ export default function Home() {
     fen,
     gameStatus,
     lastError,
+    idleSnarkIndex,
+    idleSnark,
     capturedPieces,
     customSquareStyles,
     whiteTime,
@@ -127,6 +129,11 @@ export default function Home() {
           status={gameStatus.status}
           lastError={lastError}
           showTimer={showTimer}
+          isGameOver={gameStatus.isGameOver}
+          outcome={gameStatus.outcome}
+          winner={gameStatus.winner}
+          idleSnark={idleSnark}
+          idleSnarkKey={idleSnarkIndex}
         />
 
         <PromotionDialog
