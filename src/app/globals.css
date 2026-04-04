@@ -569,18 +569,24 @@ body {
 @media (max-width: 480px) {
   .timer-banner {
     padding: 10px 12px;
-    gap: 8px;
-    flex-wrap: wrap;
+    gap: 6px;
+    flex-wrap: nowrap;
+    align-items: center;
     min-height: 0;
   }
 
   .timer-section {
-    padding: 0 4px;
-    flex: 1 1 50%;
+    padding: 0 2px;
+    flex: 1 1 0;
+    min-width: 0;
   }
 
   .timer-header {
-    gap: 4px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
     margin-bottom: 4px;
   }
 
@@ -589,9 +595,9 @@ body {
   }
 
   .timer-value {
-    font-size: 18px;
-    padding: 4px 8px;
-    min-width: 64px;
+    font-size: 16px;
+    padding: 4px 6px;
+    min-width: 0;
   }
 
   .material-points {
@@ -600,17 +606,22 @@ body {
   }
 
   .turn-indicator {
-    order: 3;
-    flex-basis: 100%;
-    padding: 4px 0 0;
+    flex-direction: row;
+    flex: 0 1 auto;
+    min-width: 0;
+    padding: 0 4px;
+    gap: 6px;
   }
 
   .turn-text {
-    font-size: 10px;
+    font-size: 9px;
+    max-width: 56px;
+    line-height: 1.15;
   }
 
   .turn-dot {
     width: 10px;
     height: 10px;
+    flex-shrink: 0;
   }
 }
