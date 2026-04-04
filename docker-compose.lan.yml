@@ -1,0 +1,15 @@
+# Override: expose HTTP ports on all interfaces so LAN clients can reach the stack.
+# Game server CORS must include the browser origin you use on the LAN (see ALLOWED_ORIGINS).
+# NEXT_PUBLIC_WS_URL must be the URL devices use to reach the WS server (e.g. http://192.168.1.10:4001).
+#
+#   docker compose -f docker-compose.yml -f docker-compose.lan.yml build --build-arg NEXT_PUBLIC_WS_URL=http://YOUR_LAN_IP:4001
+#   docker compose -f docker-compose.yml -f docker-compose.lan.yml up -d
+
+services:
+  game-server:
+    ports:
+      - "0.0.0.0:4001:4001"
+
+  web:
+    ports:
+      - "0.0.0.0:3000:3000"

@@ -4,3 +4,5 @@ export { GameStatus } from "./GameStatus";
 export { GameControls } from "./GameControls";
 export { TimerBanner } from "./TimerBanner";
 export { HamburgerMenu } from "./HamburgerMenu";
+export { OnlineChessScreen } from "./OnlineChessScreen";
+export { CopyRoomLinkButton } from "./CopyRoomLinkButton";

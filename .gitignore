@@ -19,6 +19,8 @@ node_modules/
 
 # Production
 /build
+/game-server/dist
+/game-server/data/*.db*
 
 # Misc
 .DS_Store
@@ -30,9 +32,15 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# Environment files
-.env*
-.env*.local
+# Environment files (secrets & local overrides; *.example templates are tracked)
+.env
+.env.local
+.env.*.local
+!.env.example
+!.env.production.example
+
+# Cursor / local IDE
+.cursor/
 
 # Vercel
 .vercel

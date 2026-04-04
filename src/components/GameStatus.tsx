@@ -11,6 +11,8 @@ interface GameStatusProps {
   idleSnark?: string | null;
   /** Increments each time the player puts a piece back; drives carousel animation */
   idleSnarkKey?: number | null;
+  /** Shown on the same row as the status line (e.g. copy room link). */
+  roomLinks?: React.ReactNode;
 }
 
 export const GameStatus: React.FC<GameStatusProps> = ({
@@ -22,6 +24,7 @@ export const GameStatus: React.FC<GameStatusProps> = ({
   winner = null,
   idleSnark = null,
   idleSnarkKey = null,
+  roomLinks,
 }) => {
   const showGameOverBanner = Boolean(isGameOver && outcome);
   const showRegularStatusRow =
@@ -85,9 +88,20 @@ export const GameStatus: React.FC<GameStatusProps> = ({
         </div>
       )}
 
-      {showRegularStatusRow && (
-        <div style={{ marginBottom: 4 }}>
-          <strong>Status:</strong> {status}
+      {(showRegularStatusRow || roomLinks) && (
+        <div
+          className={`game-status-bar${roomLinks && !showRegularStatusRow ? " game-status-bar--links-only" : ""}`}
+        >
+          <div className="game-status-bar__status">
+            {showRegularStatusRow && (
+              <>
+                <strong>Status:</strong> {status}
+              </>
+            )}
+          </div>
+          {roomLinks && (
+            <div className="game-status-bar__links">{roomLinks}</div>
+          )}
         </div>
       )}
 

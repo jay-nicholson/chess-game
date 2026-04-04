@@ -4,26 +4,50 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:ws": "tsx watch game-server/src/index.ts",
+    "dev:all": "npm run dev & npm run dev:ws",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "ws": "tsx game-server/src/index.ts",
+    "build:ws": "tsc -p game-server/tsconfig.json",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "docker:build": "docker compose build",
+    "docker:up": "docker compose up -d",
+    "docker:restart": "bash scripts/docker-restart.sh",
+    "docker:smoke": "bash scripts/docker-smoke.sh",
+    "tmux:docker": "bash scripts/tmux-docker.sh",
+    "dev:docker-tmux": "bash scripts/tmux-docker.sh --attach"
   },
   "dependencies": {
+    "@socket.io/redis-adapter": "^8.3.0",
+    "better-sqlite3": "^12.4.1",
     "chess.js": "^1.4.0",
+    "drizzle-orm": "^0.44.5",
     "next": "15.5.9",
+    "pg": "^8.13.1",
     "react": "19.1.0",
     "react-chessboard": "^5.5.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "redis": "^5.8.3",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "zod": "^4.1.11"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/pg": "^8.11.10",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.5.0",
+    "drizzle-kit": "^0.31.5",
     "tailwindcss": "^4",
+    "tsx": "^4.20.6",
     "typescript": "^5"
   }
 }

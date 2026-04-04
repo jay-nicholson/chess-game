@@ -1,0 +1,89 @@
+# Chess app stack for a homeserver: Next.js + game-server + Postgres.
+# See docs/deploy-homeserver.md for Cloudflare Tunnel (no inbound router ports).
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-chess}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-chess}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-chess} -d ${POSTGRES_DB:-chess}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  game-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.game-server
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-chess}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-chess}
+      WS_PORT: "4001"
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-80}
+      FIDGET_RATE_LIMIT_PER_MINUTE: ${FIDGET_RATE_LIMIT_PER_MINUTE:-40}
+      SPECTATOR_CAP_PER_ROOM: ${SPECTATOR_CAP_PER_ROOM:-50}
+      HEARTBEAT_INTERVAL_MS: ${HEARTBEAT_INTERVAL_MS:-10000}
+      HEARTBEAT_TIMEOUT_MS: ${HEARTBEAT_TIMEOUT_MS:-30000}
+      RECONNECT_WINDOW_MS: ${RECONNECT_WINDOW_MS:-60000}
+      INITIAL_CLOCK_MS: ${INITIAL_CLOCK_MS:-1200000}
+      GAME_SERVER_HEALTH_KEY: ${GAME_SERVER_HEALTH_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:4001:4001"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:4001/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      args:
+        NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-http://127.0.0.1:4001}
+    restart: unless-stopped
+    environment:
+      PORT: "3000"
+      HOSTNAME: "0.0.0.0"
+    depends_on:
+      game-server:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3000:3000"
+
+  # Optional: outbound-only tunnel to Cloudflare (no inbound router ports).
+  # Create a tunnel token in the Cloudflare dashboard, then:
+  #   CLOUDFLARE_TUNNEL_TOKEN=... docker compose --profile tunnel up -d
+  # Route hostnames in the dashboard to http://web:3000 and http://game-server:4001 (or host ports).
+  cloudflared:
+    profiles: ["tunnel"]
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      # Set when using profile `tunnel` (optional otherwise — avoids failing `docker compose build` without it).
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
+    depends_on:
+      - web
+      - game-server
+    networks:
+      - default
+
+volumes:
+  pgdata:

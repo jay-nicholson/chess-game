@@ -6,6 +6,8 @@ interface TimerBannerProps {
   whiteTime: number; // in seconds
   blackTime: number; // in seconds
   isGameOver: boolean;
+  /** Clocks are frozen until both players are connected. */
+  waitingForOpponent?: boolean;
   capturedPieces: {
     white: string[];
     black: string[];
@@ -17,6 +19,7 @@ export const TimerBanner: React.FC<TimerBannerProps> = ({
   whiteTime,
   blackTime,
   isGameOver,
+  waitingForOpponent,
   capturedPieces,
 }) => {
   const formatTime = (seconds: number): string => {
@@ -33,10 +36,16 @@ export const TimerBanner: React.FC<TimerBannerProps> = ({
   }
 
   return (
-    <div className="timer-banner">
-      <div
-        className={`timer-section ${currentPlayer === "white" ? "active" : ""}`}
-      >
+    <div className="timer-banner-stack">
+      {waitingForOpponent && (
+        <p className="timer-waiting-opponent">
+          Clocks start when both players have joined this room.
+        </p>
+      )}
+      <div className="timer-banner">
+        <div
+          className={`timer-section ${currentPlayer === "white" ? "active" : ""}`}
+        >
         <div className="timer-header">
           <div className="timer-label">White</div>
           <div className="timer-value white-timer">{formatTime(whiteTime)}</div>
@@ -67,6 +76,7 @@ export const TimerBanner: React.FC<TimerBannerProps> = ({
             <span className="material-points">+{blackPoints}</span>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

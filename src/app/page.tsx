@@ -1,9 +1,11 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useChessGame } from "../lib/useChessGame";
 import {
+  CopyRoomLinkButton,
   PromotionDialog,
   GameStatus,
   TimerBanner,
@@ -38,6 +40,12 @@ const Chessboard = dynamic(
 );
 
 export default function Home() {
+  const [roomInput, setRoomInput] = useState("");
+  /** Set only after mount so server and first client render match (no Math.random during SSR). */
+  const [generatedRoom, setGeneratedRoom] = useState<string | null>(null);
+  useEffect(() => {
+    setGeneratedRoom(`room-${Math.random().toString(36).slice(2, 8)}`);
+  }, []);
   const {
     fen,
     gameStatus,
@@ -72,6 +80,45 @@ export default function Home() {
             onTimerChange={changeTimer}
             currentTimerMinutes={timerMinutes}
           />
+        </div>
+
+        <div className="online-launcher">
+          <div className="online-launcher__row">
+            {generatedRoom ? (
+              <>
+                <Link href={`/play/${generatedRoom}`} className="game-button">
+                  Create online room
+                </Link>
+                <Link href={`/watch/${generatedRoom}`} className="game-button">
+                  Spectate room
+                </Link>
+                <CopyRoomLinkButton roomId={generatedRoom} label="Copy invite link" />
+              </>
+            ) : (
+              <>
+                <span className="game-button online-launcher__pending" aria-busy="true">
+                  Preparing room…
+                </span>
+                <span className="game-button online-launcher__pending" aria-busy="true">
+                  Preparing room…
+                </span>
+              </>
+            )}
+          </div>
+          <div className="online-launcher__row">
+            <input
+              className="room-input"
+              value={roomInput}
+              onChange={(event) => setRoomInput(event.target.value)}
+              placeholder="Enter room id"
+            />
+            <Link
+              href={roomInput.trim() ? `/play/${roomInput.trim()}` : "#"}
+              className={`game-button ${roomInput.trim() ? "" : "disabled-link"}`}
+            >
+              Join room
+            </Link>
+          </div>
         </div>
 
         {showTimer && (
