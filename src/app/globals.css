@@ -254,11 +254,13 @@ body {
   margin-bottom: 8px;
 }
 
-/* Timer Banner */
+/* Timer Banner — 1fr | auto | 1fr keeps the turn indicator truly centered */
 .timer-banner {
-  display: flex;
-  align-items: stretch;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  justify-items: center;
+  column-gap: 12px;
   width: 100%;
   max-width: 560px;
   padding: 16px 20px;
@@ -278,10 +280,14 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  flex: 1;
+  align-items: center;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   opacity: 0.7;
   transition: all 0.3s ease;
-  padding: 0 8px;
+  padding: 0 4px;
+  justify-self: stretch;
 }
 
 .timer-section.active {
@@ -334,8 +340,10 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 0 16px;
-  flex: 0 0 auto;
+  padding: 0 8px;
+  justify-self: center;
+  align-self: center;
+  text-align: center;
 }
 
 .turn-dot {
@@ -568,17 +576,15 @@ body {
 
 @media (max-width: 480px) {
   .timer-banner {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    column-gap: 8px;
     padding: 10px 12px;
-    gap: 6px;
-    flex-wrap: nowrap;
-    align-items: center;
     min-height: 0;
+    align-items: center;
   }
 
   .timer-section {
     padding: 0 2px;
-    flex: 1 1 0;
-    min-width: 0;
   }
 
   .timer-header {
@@ -588,6 +594,7 @@ body {
     flex-wrap: wrap;
     gap: 6px;
     margin-bottom: 4px;
+    width: 100%;
   }
 
   .timer-label {
@@ -607,16 +614,17 @@ body {
 
   .turn-indicator {
     flex-direction: row;
-    flex: 0 1 auto;
-    min-width: 0;
-    padding: 0 4px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
     gap: 6px;
   }
 
   .turn-text {
     font-size: 9px;
-    max-width: 56px;
+    max-width: 72px;
     line-height: 1.15;
+    text-align: center;
   }
 
   .turn-dot {
