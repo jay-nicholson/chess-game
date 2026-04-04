@@ -254,14 +254,16 @@ body {
   margin-bottom: 8px;
 }
 
-/* Timer Banner */
+/* Timer Banner — 1fr | auto | 1fr keeps the turn indicator truly centered */
 .timer-banner {
-  display: flex;
-  align-items: stretch;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  justify-items: center;
+  column-gap: 12px;
   width: 100%;
   max-width: 560px;
-  padding: 16px 20px;
+  padding: 18px 20px;
   background: linear-gradient(
     135deg,
     var(--card-bg) 0%,
@@ -271,22 +273,30 @@ body {
   border-radius: 12px;
   margin-bottom: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-  min-height: 80px;
+  box-sizing: border-box;
 }
 
 .timer-section {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  flex: 1;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   opacity: 0.7;
-  transition: all 0.3s ease;
-  padding: 0 8px;
+  transition:
+    opacity 0.3s ease,
+    box-shadow 0.3s ease;
+  padding: 0 4px;
+  justify-self: stretch;
+  align-self: center;
 }
 
 .timer-section.active {
   opacity: 1;
-  transform: scale(1.02);
+  filter: brightness(1.06);
 }
 
 .timer-header {
@@ -294,7 +304,6 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  margin-bottom: 8px;
 }
 
 .timer-label {
@@ -302,6 +311,7 @@ body {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
+  line-height: 1.15;
   color: var(--muted);
 }
 
@@ -334,8 +344,9 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 0 16px;
-  flex: 0 0 auto;
+  padding: 0 8px;
+  place-self: center;
+  text-align: center;
 }
 
 .turn-dot {
@@ -368,12 +379,15 @@ body {
   line-height: 1.2;
 }
 
-/* Material Section */
+/* Material Section — no reserved strip when empty (avoids top-heavy clocks) */
 .material-section {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
+}
+
+.material-section:not(:empty) {
   min-height: 24px;
 }
 
@@ -568,20 +582,24 @@ body {
 
 @media (max-width: 480px) {
   .timer-banner {
-    padding: 10px 12px;
-    gap: 8px;
-    flex-wrap: wrap;
-    min-height: 0;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    column-gap: 8px;
+    padding: 14px 12px;
+    align-items: center;
   }
 
   .timer-section {
-    padding: 0 4px;
-    flex: 1 1 50%;
+    padding: 0 2px;
+    gap: 6px;
   }
 
   .timer-header {
-    gap: 4px;
-    margin-bottom: 4px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 100%;
   }
 
   .timer-label {
@@ -589,9 +607,9 @@ body {
   }
 
   .timer-value {
-    font-size: 18px;
-    padding: 4px 8px;
-    min-width: 64px;
+    font-size: 16px;
+    padding: 4px 6px;
+    min-width: 0;
   }
 
   .material-points {
@@ -600,17 +618,23 @@ body {
   }
 
   .turn-indicator {
-    order: 3;
-    flex-basis: 100%;
-    padding: 4px 0 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+    gap: 6px;
   }
 
   .turn-text {
-    font-size: 10px;
+    font-size: 9px;
+    max-width: 72px;
+    line-height: 1.15;
+    text-align: center;
   }
 
   .turn-dot {
     width: 10px;
     height: 10px;
+    flex-shrink: 0;
   }
 }
